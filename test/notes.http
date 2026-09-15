@@ -1,0 +1,20 @@
+GET http://localhost:8080/notes
+
+### Skapa ny note
+POST http://localhost:8080/notes
+Content-Type: application/json
+
+{
+    "text": "POST funkar!"
+}
+
+### Uppdatera note
+PUT http://localhost:8080/notes/2
+Content-Type: application/json
+
+{
+    "text": "Ny text!!"
+}
+
+### Uppdatera note
+DELETE http://localhost:8080/notes/2
