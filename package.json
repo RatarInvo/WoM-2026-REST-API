@@ -1,5 +1,5 @@
 {
-  "name": "rahti2-docker-node",
+  "name": "wom-2026-rest-api",
   "version": "1.0.0",
   "description": "Note: OpenShift wants the main branch to be named *master* by default, you have two options:\r 1. Push to origin/master to deploy\r 2. Change the setting in Openshift to *main*:    \r     Edit BuildConfig ==> Show advanced git options ==> Git reference: `main`",
   "main": "src/server.js",
@@ -10,14 +10,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/fw-teaching/rahti2-docker-node.git"
+    "url": "git+https://github.com/RatarInvo/WoM-2026-REST-API.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/fw-teaching/rahti2-docker-node/issues"
+    "url": "https://github.com/RatarInvo/WoM-2026-REST-API/issues"
   },
-  "homepage": "https://github.com/fw-teaching/rahti2-docker-node#readme",
+  "homepage": "https://github.com/RatarInvo/WoM-2026-REST-API#readme",
   "dependencies": {
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
