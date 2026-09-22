@@ -8,67 +8,157 @@ const prisma = new PrismaClient()
 router.use(authorize)
 
 router.get('/', async (req, res) => {
-    const notes = await prisma.notes.findMany({
-        where: { username: (req.authUser.username) },
-        orderBy: { id: 'asc' }
-    })
-    res.send(notes)
+    try {
+        const notes = await prisma.notes.findMany({
+            where: { author_id: req.authUser.sub },
+            orderBy: { id: 'asc' }
+        })
+
+        return res.json(notes)
+    } catch (error) {
+        return res.status(500).json({
+            msg: 'Could not fetch notes',
+            error: error.message
+        })
+    }
 })
 
 router.get('/:id', async (req, res) => {
-    const note = await prisma.notes.findUnique({
-        where: { 
-            id: (req.params.id),
-            username: (req.authUser.username)
-        }
-    })
-    if (!note) res.status(404).send({msg: "Note not found"})
+    const noteId = Number(req.params.id)
 
-    res.send(note)
+    if (!Number.isInteger(noteId)) {
+        return res.status(400).json({ msg: 'Invalid note id' })
+    }
+
+    try {
+        const note = await prisma.notes.findFirst({
+            where: {
+                id: noteId,
+                author_id: req.authUser.sub
+            }
+        })
+
+        if (!note) {
+            return res.status(404).json({ msg: 'Note not found' })
+        }
+
+        return res.json(note)
+    } catch (error) {
+        return res.status(500).json({
+            msg: 'Could not fetch note',
+            error: error.message
+        })
+    }
 })
 
-
 router.post('/', async (req, res) => {
-    console.log(req.body)
-    
-    const note = await prisma.notes.create({
-        data: { 
-            username: (req.authUser.username),
-            note: req.body.note 
-        }
-    })
-    
-    res.send({
-        msg: "Note created", 
-        id: note.id
-    })
+    if (!req.authUser || !req.authUser.sub) {
+        return res.status(401).json({ msg: 'Unauthorized' })
+    }
+
+    const noteText = req.body?.note
+
+    if (!noteText || !noteText.trim()) {
+        return res.status(400).json({ msg: 'Note text is required' })
+    }
+
+    try {
+        const note = await prisma.notes.create({
+            data: {
+                author_id: req.authUser.sub,
+                note: noteText.trim()
+            }
+        })
+
+        return res.status(201).json({
+            user: req.authUser.name,
+            msg: 'Note created',
+            id: note.id
+        })
+    } catch (error) {
+        return res.status(500).json({
+            msg: 'Could not create note',
+            error: error.message
+        })
+    }
 })
 
 router.put('/:id', async (req, res) => {
-    console.log(`PATCH ${req.params.id}`)
+    const noteId = Number(req.params.id)
 
-    const note = await prisma.notes.update({
-        data: { note: req.body.note, updated_at: new Date() },
-        where: { id: (req.params.id) }
-    })
+    if (!Number.isInteger(noteId)) {
+        return res.status(400).json({ msg: 'Invalid note id' })
+    }
 
-    res.send({
-        msg: "Note updated", 
-        id: note.id,
-        updatedNote: note
-    })
+    const newNote = req.body?.note
+
+    if (!newNote || !newNote.trim()) {
+        return res.status(400).json({ msg: 'Note text is required' })
+    }
+
+    try {
+        const existingNote = await prisma.notes.findFirst({
+            where: {
+                id: noteId,
+                author_id: req.authUser.sub
+            }
+        })
+
+        if (!existingNote) {
+            return res.status(404).json({ msg: 'Note not found' })
+        }
+
+        const note = await prisma.notes.update({
+            where: { id: noteId },
+            data: { note: newNote.trim() }
+        })
+
+        return res.json({
+            msg: 'Note updated',
+            id: note.id,
+            updatedNote: note
+        })
+    } catch (error) {
+        return res.status(500).json({
+            msg: 'Could not update note',
+            error: error.message
+        })
+    }
 })
 
 router.delete('/:id', async (req, res) => {
+    const noteId = Number(req.params.id)
 
-    const note = await prisma.notes.delete({
-        where: { id: (req.params.id) }
-    })
+    if (!Number.isInteger(noteId)) {
+        return res.status(400).json({ msg: 'Invalid note id' })
+    }
 
-    res.send({
-        msg: "Note deleted", 
-        id: note.id
-    })
+    try {
+        const existingNote = await prisma.notes.findFirst({
+            where: {
+                id: noteId,
+                author_id: req.authUser.sub
+            }
+        })
+
+        if (!existingNote) {
+            return res.status(404).json({ msg: 'Note not found' })
+        }
+
+        const note = await prisma.notes.delete({
+            where: { id: noteId }
+        })
+
+        return res.json({
+            msg: 'Note deleted',
+            id: note.id
+        })
+    } catch (error) {
+        return res.status(500).json({
+            msg: 'Could not delete note',
+            error: error.message
+        })
+    }
 })
 
 

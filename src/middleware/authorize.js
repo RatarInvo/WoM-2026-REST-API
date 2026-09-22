@@ -1,25 +1,24 @@
-
 const jwt = require('jsonwebtoken')
 
 module.exports = (req, res, next) => {
-    console.log(`Authorize JWT`)
-    try {
-        const authHeader = req.headers['authorization'] || ''
-        const token = authHeader.split(' ')[1]
-        console.log(`token: ${token}`)
+  try {
+    const authHeader = req.headers.authorization || ''
+    const token = authHeader.startsWith('Bearer ')
+      ? authHeader.split(' ')[1]
+      : null
 
-        const user = jwt.verify(token, process.env.JWT_SECRET)
-        req.authUser = user
-
-        console.log(`Token valid for user ${user.sub} ${user.name}`)
-
-    } catch (error) {
-        console.log(error)
-        res.status(401).json({
-            msg: "Authorization failed",
-            error: error.message
-        })
+    if (!token) {
+      return res.status(401).json({ msg: 'Authorization required' })
     }
-    
-    next()
+
+    const user = jwt.verify(token, process.env.JWT_SECRET)
+    req.authUser = user
+
+    return next()
+  } catch (error) {
+    return res.status(401).json({
+      msg: 'Authorization failed',
+      error: error.message
+    })
+  }
 }

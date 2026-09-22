@@ -5,9 +5,10 @@
 @DEV_TOKEN = {{$dotenv DEV_TOKEN}} 
 
 GET {{API_URL}}/notes
+Authorization: Bearer {{DEV_TOKEN}}
 
 ### GET single note
-GET {{API_URL}}/notes/7
+GET {{API_URL}}/notes/3
 Authorization: Bearer {{DEV_TOKEN}}
 
 ### Skapa ny note
@@ -16,13 +17,13 @@ Content-Type: application/json
 Authorization: Bearer {{DEV_TOKEN}}
 
 {
-    "username": "Ratar",
     "note": "någon annans note"
 }
 
 ### Uppdatera note
 PUT {{API_URL}}/notes/2
 Content-Type: application/json
+Authorization: Bearer {{DEV_TOKEN}}
 
 {
     "note": "Ny text!!"
@@ -30,3 +31,4 @@ Content-Type: application/json
 
 ### Uppdatera note
 DELETE {{API_URL}}/notes/4
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ZjEyOGJiMy05MTExLTQ0ZTEtOWUyYS0xOTRkMjcyZDhhZjEiLCJuYW1lIjoicmF0YXIiLCJyb2xlIjoidXNlciIsImlhdCI6MTc5MDA5MjcyOCwiZXhwIjoxNzkyNjg0NzI4fQ.90UdkQIKcvUyhC6kWAAkE6hTtyz70pRYPNtrhai5SGs
