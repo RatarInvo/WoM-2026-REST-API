@@ -1,5 +1,5 @@
 {
-  "name": "wom-2026-rest-api",
+  "name": "RatarInvo/WoM-2026-REST-API",
   "version": "1.0.0",
   "description": "Note: OpenShift wants the main branch to be named *master* by default, you have two options:\r 1. Push to origin/master to deploy\r 2. Change the setting in Openshift to *main*:    \r     Edit BuildConfig ==> Show advanced git options ==> Git reference: `main`",
   "main": "src/server.js",
@@ -19,8 +19,11 @@
   },
   "homepage": "https://github.com/RatarInvo/WoM-2026-REST-API#readme",
   "dependencies": {
+    "@prisma/client": "^6.17.1",
+    "bcrypt": "^6.0.0",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "nodemon": "^3.1.14"
+    "jsonwebtoken": "^9.0.3",
+    "nodemon": "^3.1.14",
   }
 }

@@ -1,20 +1,32 @@
-GET http://localhost:8080/notes
+# Rest-client stöder .env
+#@API_URL = {{$dotenv PRODUCTION_API}}
+@API_URL = http://localhost:4000
+
+@DEV_TOKEN = {{$dotenv DEV_TOKEN}} 
+
+GET {{API_URL}}/notes
+
+### GET single note
+GET {{API_URL}}/notes/7
+Authorization: Bearer {{DEV_TOKEN}}
 
 ### Skapa ny note
-POST http://localhost:8080/notes
+POST {{API_URL}}/notes
 Content-Type: application/json
+Authorization: Bearer {{DEV_TOKEN}}
 
 {
-    "text": "POST funkar!"
+    "username": "Ratar",
+    "note": "någon annans note"
 }
 
 ### Uppdatera note
-PUT http://localhost:8080/notes/2
+PUT {{API_URL}}/notes/2
 Content-Type: application/json
 
 {
-    "text": "Ny text!!"
+    "note": "Ny text!!"
 }
 
 ### Uppdatera note
-DELETE http://localhost:8080/notes/2
+DELETE {{API_URL}}/notes/4

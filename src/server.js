@@ -1,9 +1,10 @@
 const express = require('express')
 const app = express()
 require('dotenv').config()
-const PORT = process.env.PORT || 3000
+const PORT = process.env.PORT || 4000
 
 console.log(`Node.js ${process.version}`)
+
 
 app.use(express.json())
 

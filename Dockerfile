@@ -14,7 +14,10 @@ RUN npm install
 COPY . .
 
 # Expose the port the app runs on
-EXPOSE 3000
+EXPOSE 4000
+
+# Generate prisma client
+RUN npx prisma generate
 
 # Define the command to run the app
 CMD ["sh", "-c", "if [ \"$MODE\" = 'development' ]; then npm run dev; else npm start; fi"]

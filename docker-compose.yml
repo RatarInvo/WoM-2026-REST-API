@@ -6,6 +6,10 @@ services:
       - .:/app
       - /app/node_modules
     ports:
-      - "3000:3000"
+      # local:remote  (lokal-dator:container)
+      - "4000:4000"
     environment:
+      # lägg hit ENV-variabler som containern ska se
       - MODE
+      - DATABASE_URL
+      - JWT_SECRET
