@@ -7,10 +7,29 @@ const prisma = new PrismaClient()
 
 router.use(authorize)
 
+const accessibleBoard = (userId) => ({
+    OR: [
+        { owner_id: userId },
+        { user_ids: { has: userId } }
+    ]
+})
+
+const boardIdFromRequest = (value) => {
+    const boardId = Number(value)
+    return Number.isInteger(boardId) && boardId > 0 ? boardId : null
+}
+
 router.get('/', async (req, res) => {
     try {
         const notes = await prisma.notes.findMany({
-            where: { author_id: req.authUser.sub },
+            where: {
+                board: accessibleBoard(req.authUser.sub)
+            },
+            include: {
+                board: {
+                    select: { id: true, name: true }
+                }
+            },
             orderBy: { id: 'asc' }
         })
 
@@ -34,7 +53,12 @@ router.get('/:id', async (req, res) => {
         const note = await prisma.notes.findFirst({
             where: {
                 id: noteId,
-                author_id: req.authUser.sub
+                board: accessibleBoard(req.authUser.sub)
+            },
+            include: {
+                board: {
+                    select: { id: true, name: true }
+                }
             }
         })
 
@@ -57,15 +81,32 @@ router.post('/', async (req, res) => {
     }
 
     const noteText = req.body?.note
+    const boardId = boardIdFromRequest(req.body?.board_id)
 
     if (!noteText || !noteText.trim()) {
         return res.status(400).json({ msg: 'Note text is required' })
     }
 
+    if (!boardId) {
+        return res.status(400).json({ msg: 'board_id is required' })
+    }
+
     try {
+        const board = await prisma.boards.findFirst({
+            where: {
+                id: boardId,
+                ...accessibleBoard(req.authUser.sub)
+            }
+        })
+
+        if (!board) {
+            return res.status(403).json({ msg: 'No access to board' })
+        }
+
         const note = await prisma.notes.create({
             data: {
                 author_id: req.authUser.sub,
+                board_id: boardId,
                 note: noteText.trim()
             }
         })
@@ -100,7 +141,7 @@ router.put('/:id', async (req, res) => {
         const existingNote = await prisma.notes.findFirst({
             where: {
                 id: noteId,
-                author_id: req.authUser.sub
+                board: accessibleBoard(req.authUser.sub)
             }
         })
 
@@ -137,7 +178,7 @@ router.delete('/:id', async (req, res) => {
         const existingNote = await prisma.notes.findFirst({
             where: {
                 id: noteId,
-                author_id: req.authUser.sub
+                board: accessibleBoard(req.authUser.sub)
             }
         })
 

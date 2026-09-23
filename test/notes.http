@@ -17,11 +17,12 @@ Content-Type: application/json
 Authorization: Bearer {{DEV_TOKEN}}
 
 {
-    "note": "någon annans note"
+    "note": "någon annans note",
+    "board_id": 1
 }
 
 ### Uppdatera note
-PUT {{API_URL}}/notes/2
+PUT {{API_URL}}/notes/1
 Content-Type: application/json
 Authorization: Bearer {{DEV_TOKEN}}
 

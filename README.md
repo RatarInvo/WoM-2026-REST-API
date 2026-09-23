@@ -13,3 +13,33 @@ Rename `.env-example` to `.env` to override the `MODE=production`set in the `Doc
 
 To run the container locally:
 `docker-compose up --build`
+
+### Boards
+
+Notes belong to a board. Apply the Prisma schema to the database with:
+
+`npx prisma db push`
+
+Create boards directly in PostgreSQL. `owner_id` always has access, and users in
+`user_ids` can read, update and delete notes on the board:
+
+```sql
+INSERT INTO boards (name, owner_id, user_ids)
+VALUES (
+    'Project A',
+    'owner-user-uuid',
+    ARRAY['owner-user-uuid', 'another-user-uuid']::uuid[]
+);
+```
+
+When creating a note, send the board id:
+
+```json
+{
+    "note": "A note in Project A",
+    "board_id": 1
+}
+```
+
+The notes endpoints return `board.id` and `board.name`, so the frontend can
+group or filter notes by board.

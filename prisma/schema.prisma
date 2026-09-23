@@ -10,9 +10,25 @@ datasource db {
 model notes {
   id         Int      @id @default(autoincrement())
   author_id  String   @db.Uuid
+  board_id   Int
   note       String?  @db.VarChar
   created_at DateTime @default(now()) @db.Timestamptz(6)
   updated_at DateTime @updatedAt @db.Timestamptz(6)
 
+  board      boards   @relation(fields: [board_id], references: [id], onDelete: Cascade)
+
   @@index([author_id])
+  @@index([board_id])
+}
+
+model boards {
+  id         Int      @id @default(autoincrement())
+  name       String   @db.VarChar(100)
+  owner_id   String   @db.Uuid
+  user_ids   String[] @db.Uuid
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+
+  notes      notes[]
+
+  @@index([owner_id])
 }
