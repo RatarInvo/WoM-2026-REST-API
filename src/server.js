@@ -1,11 +1,12 @@
 const express = require('express')
+const cors = require('cors')
+
 const app = express()
 require('dotenv').config()
+
 const PORT = process.env.PORT || 4000
 
-console.log(`Node.js ${process.version}`)
-
-
+app.use(cors())
 app.use(express.json())
 
 app.get('/', (req, res) => {
@@ -15,13 +16,6 @@ app.get('/', (req, res) => {
 const notesRouter = require('./routes/notes')
 app.use('/notes', notesRouter)
 
-
-
 app.listen(PORT, () => {
-    try {
-        console.log(`Running on http://localhost:${PORT}`)
-    } catch (error) {
-        res.status(500).json({ message: error.message })
-    }
-    
+    console.log(`Running on http://localhost:${PORT}`)
 })
