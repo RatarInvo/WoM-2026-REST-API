@@ -131,10 +131,38 @@ router.put('/:id', async (req, res) => {
         return res.status(400).json({ msg: 'Invalid note id' })
     }
 
-    const newNote = req.body?.note
+    const data = {}
 
-    if (!newNote || !newNote.trim()) {
-        return res.status(400).json({ msg: 'Note text is required' })
+    if (req.body?.note !== undefined) {
+        if (typeof req.body.note !== 'string' || !req.body.note.trim()) {
+            return res.status(400).json({ msg: 'Note text can not be empty' })
+        }
+        data.note = req.body.note.trim()
+    }
+
+    const layoutFields = {
+        x: { column: 'pos_x', min: 0, max: 100000 },
+        y: { column: 'pos_y', min: 0, max: 100000 },
+        width: { column: 'width', min: 50, max: 5000 },
+        height: { column: 'height', min: 50, max: 5000 },
+        color: { column: 'color', min: 0, max: 20 }
+    }
+
+    for (const [field, rule] of Object.entries(layoutFields)) {
+        if (req.body?.[field] === undefined) {
+            continue
+        }
+
+        const value = Math.round(Number(req.body[field]))
+
+        if (!Number.isFinite(value) || value < rule.min || value > rule.max) {
+            return res.status(400).json({ msg: `Invalid ${field}` })
+        }
+        data[rule.column] = value
+    }
+
+    if (Object.keys(data).length === 0) {
+        return res.status(400).json({ msg: 'Nothing to update' })
     }
 
     try {
@@ -151,7 +179,7 @@ router.put('/:id', async (req, res) => {
 
         const note = await prisma.notes.update({
             where: { id: noteId },
-            data: { note: newNote.trim() }
+            data: data
         })
 
         return res.json({

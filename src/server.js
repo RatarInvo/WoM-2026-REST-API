@@ -14,7 +14,10 @@ app.get('/', (req, res) => {
 })
 
 const notesRouter = require('./routes/notes')
+const boardsRouter = require('./routes/boards')
+
 app.use('/notes', notesRouter)
+app.use('/boards', boardsRouter)
 
 app.listen(PORT, () => {
     console.log(`Running on http://localhost:${PORT}`)
