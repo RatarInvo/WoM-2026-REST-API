@@ -2,6 +2,7 @@ const express = require('express')
 const router = express.Router()
 const { PrismaClient } = require('@prisma/client')  // object destructuring
 const authorize = require('../middleware/authorize')
+const { broadcast } = require('../realtime')
 
 const prisma = new PrismaClient()
 
@@ -111,6 +112,8 @@ router.post('/', async (req, res) => {
             }
         })
 
+        broadcast(boardId, { type: 'note_created', note })
+
         return res.status(201).json({
             user: req.authUser.name,
             msg: 'Note created',
@@ -182,6 +185,8 @@ router.put('/:id', async (req, res) => {
             data: data
         })
 
+        broadcast(note.board_id, { type: 'note_updated', note })
+
         return res.json({
             msg: 'Note updated',
             id: note.id,
@@ -217,6 +222,8 @@ router.delete('/:id', async (req, res) => {
         const note = await prisma.notes.delete({
             where: { id: noteId }
         })
+
+        broadcast(note.board_id, { type: 'note_deleted', id: note.id })
 
         return res.json({
             msg: 'Note deleted',
