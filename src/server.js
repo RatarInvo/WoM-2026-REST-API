@@ -21,4 +21,8 @@ app.use('/boards', boardsRouter)
 
 const { setupRealtime } = require('./realtime')
 
+const server = app.listen(PORT, () => {
+    console.log(`Running on ${PORT}`)
+})
+
 setupRealtime(server)
