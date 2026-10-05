@@ -95,7 +95,7 @@ function setupRealtime(server) {
     const wss = new WebSocketServer({ server })
 
     wss.on('connection', (socket, req) => {
-        const token = new URL(req.url, 'http://localhost').searchParams.get('token')
+        const token = new URL(req.url, 'https://people.arcada.fi/~berglual/').searchParams.get('token')
 
         try {
             socket.user = jwt.verify(token, process.env.JWT_SECRET)
