@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Notes App API documentation for boards, notes, and realtime collaboration.">
+    <title>Notes App API | Documentation</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+    <style>
+        :root {
+            --bg_color: #0d0f14;
+            --card_bg: #171a21;
+            --border_color: #262b35;
+            --input_bg: #1e222b;
+            --text_primary: #e8eaed;
+            --text_secondary: #8a92a3;
+            --accent_color: #6c8eef;
+            --accent_hover: #5578e0;
+            --green: #76d49a;
+            --yellow: #f4cc72;
+            --red: #ef7774;
+            --shadow: 0 12px 30px rgba(0, 0, 0, 0.24);
+            --radius_sm: 8px;
+            --radius_md: 14px;
+        }
+
+        :root[data-theme="light"] {
+            --bg_color: #f4f6fa;
+            --card_bg: #ffffff;
+            --border_color: #d9dee8;
+            --input_bg: #eef1f7;
+            --text_primary: #1b1f27;
+            --text_secondary: #5e6779;
+            --accent_color: #3f63d6;
+            --accent_hover: #3354bd;
+            --green: #25864d;
+            --yellow: #9c7000;
+            --red: #c13632;
+            --shadow: 0 12px 30px rgba(27, 31, 39, 0.11);
+        }
+
+        * { box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            margin: 0;
+            background: var(--bg_color);
+            color: var(--text_primary);
+            font-family: "Inter", system-ui, sans-serif;
+            line-height: 1.6;
+            transition: background-color .2s ease, color .2s ease;
+        }
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            pointer-events: none;
+            opacity: .45;
+            background-image: radial-gradient(var(--border_color) 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+        a { color: var(--accent_color); text-decoration: none; }
+        a:hover { color: var(--accent_hover); }
+        code, pre { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace; }
+        code { color: var(--accent_color); font-size: .92em; }
+
+        .topbar {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+            min-height: 70px;
+            padding: 14px max(24px, calc((100% - 1180px) / 2));
+            background: color-mix(in srgb, var(--card_bg) 92%, transparent);
+            border-bottom: 1px solid var(--border_color);
+            backdrop-filter: blur(14px);
+        }
+        .brand { display: flex; align-items: center; gap: 11px; color: var(--text_primary); font-weight: 700; }
+        .brand_mark {
+            display: grid;
+            width: 32px;
+            height: 32px;
+            place-items: center;
+            color: #fff;
+            background: var(--accent_color);
+            border-radius: 9px;
+            box-shadow: 0 5px 14px rgba(108, 142, 239, .3);
+        }
+        .brand small { display: block; color: var(--text_secondary); font-size: .69rem; font-weight: 500; }
+        .topbar nav { display: flex; align-items: center; gap: 24px; font-size: .86rem; font-weight: 500; }
+        .topbar nav a { color: var(--text_secondary); }
+        .topbar nav a:hover { color: var(--text_primary); }
+        .theme_toggle {
+            width: 36px; height: 36px; padding: 0; border: 1px solid var(--border_color);
+            border-radius: var(--radius_sm); color: var(--text_secondary); background: var(--input_bg);
+            cursor: pointer; font-size: 1rem;
+        }
+        .theme_toggle:hover { color: var(--text_primary); border-color: var(--accent_color); }
+
+        .layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 64px; width: min(1180px, calc(100% - 48px)); margin: 0 auto; }
+        .sidebar { position: sticky; top: 94px; align-self: start; padding-top: 42px; }
+        .sidebar h2 { margin: 0 0 14px; color: var(--text_secondary); font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; }
+        .sidebar a { display: block; padding: 6px 0 6px 13px; border-left: 1px solid var(--border_color); color: var(--text_secondary); font-size: .84rem; }
+        .sidebar a:hover { border-color: var(--accent_color); color: var(--text_primary); }
+        .main { min-width: 0; padding: 76px 0 100px; }
+        .eyebrow { margin: 0 0 12px; color: var(--accent_color); font-size: .75rem; font-weight: 700; letter-spacing: .13em; text-transform: uppercase; }
+        h1 { max-width: 760px; margin: 0; font-size: clamp(2.4rem, 6vw, 4.5rem); letter-spacing: -.055em; line-height: 1.04; }
+        .lead { max-width: 650px; margin: 24px 0 30px; color: var(--text_secondary); font-size: 1.08rem; }
+        .base_url { display: inline-flex; align-items: center; gap: 9px; padding: 10px 14px; border: 1px solid var(--border_color); border-radius: var(--radius_sm); background: var(--card_bg); font-size: .82rem; }
+        .base_url span { width: 7px; height: 7px; background: var(--green); border-radius: 50%; }
+
+        section { margin-top: 94px; scroll-margin-top: 95px; }
+        .section_heading { display: flex; align-items: baseline; gap: 14px; margin-bottom: 24px; }
+        .section_heading h2 { margin: 0; font-size: 1.65rem; letter-spacing: -.03em; }
+        .section_heading p { margin: 0; color: var(--text_secondary); font-size: .9rem; }
+        .card { overflow: hidden; background: var(--card_bg); border: 1px solid var(--border_color); border-radius: var(--radius_md); box-shadow: var(--shadow); }
+        .auth_grid, .response_grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+        .info_card { padding: 22px; }
+        .info_card h3 { margin: 0 0 8px; font-size: 1rem; }
+        .info_card p { margin: 0; color: var(--text_secondary); font-size: .88rem; }
+        .info_card strong { color: var(--text_primary); }
+        .token { margin-top: 15px; padding: 11px 13px; overflow-x: auto; background: var(--input_bg); border-radius: var(--radius_sm); white-space: nowrap; }
+
+        .endpoint { margin-bottom: 18px; }
+        .endpoint_head { display: flex; align-items: center; gap: 11px; padding: 17px 20px; border-bottom: 1px solid var(--border_color); }
+        .method { min-width: 64px; padding: 4px 8px; border-radius: 5px; color: #fff; font-size: .7rem; font-weight: 800; letter-spacing: .05em; text-align: center; }
+        .get { background: #3678b9; } .post { background: #25864d; } .put { background: #a6771f; } .delete { background: #b44948; }
+        .path { color: var(--text_primary); font-family: monospace; font-size: .95rem; font-weight: 600; }
+        .endpoint_summary { margin-left: auto; color: var(--text_secondary); font-size: .8rem; }
+        .endpoint_body { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, .85fr); gap: 24px; padding: 20px; }
+        .endpoint_body h4 { margin: 0 0 9px; font-size: .78rem; color: var(--text_secondary); letter-spacing: .06em; text-transform: uppercase; }
+        .endpoint_body p { margin: 0 0 14px; color: var(--text_secondary); font-size: .87rem; }
+        .endpoint_body ul { margin: 0; padding-left: 18px; color: var(--text_secondary); font-size: .84rem; }
+        .endpoint_body li { margin: 5px 0; }
+        pre { position: relative; margin: 0; padding: 17px; overflow: auto; color: #d9e2f2; background: #11141a; border: 1px solid var(--border_color); border-radius: var(--radius_sm); font-size: .78rem; line-height: 1.65; }
+        :root[data-theme="light"] pre { color: #33415c; background: #f0f3f9; }
+        .copy { position: absolute; top: 8px; right: 8px; padding: 4px 8px; border: 1px solid var(--border_color); border-radius: 5px; color: var(--text_secondary); background: var(--card_bg); cursor: pointer; font-size: .68rem; }
+        .copy:hover { color: var(--text_primary); border-color: var(--accent_color); }
+        .key { color: #91a9ff; } .string { color: #9bdbb1; } .number { color: #f3c675; }
+        :root[data-theme="light"] .key { color: #385ab9; } :root[data-theme="light"] .string { color: #25864d; } :root[data-theme="light"] .number { color: #9c7000; }
+        .status { display: inline-block; margin: 12px 0 0; padding: 3px 7px; border-radius: 4px; background: var(--input_bg); color: var(--text_secondary); font-size: .72rem; font-weight: 600; }
+        .status.ok { color: var(--green); } .status.error { color: var(--red); }
+
+        .table_wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: .84rem; }
+        th, td { padding: 13px 16px; border-bottom: 1px solid var(--border_color); text-align: left; vertical-align: top; }
+        th { color: var(--text_secondary); font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; }
+        tr:last-child td { border-bottom: 0; }
+        td:first-child { color: var(--text_primary); font-weight: 600; white-space: nowrap; }
+        td:not(:first-child) { color: var(--text_secondary); }
+        .ws_url { margin-bottom: 17px; }
+        .message_grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+        .message { padding: 20px; }
+        .message h3 { margin: 0 0 10px; font-size: 1rem; }
+        .message p { margin: 0 0 13px; color: var(--text_secondary); font-size: .84rem; }
+        .note { margin-top: 18px; padding: 16px 18px; border-left: 3px solid var(--accent_color); background: var(--card_bg); color: var(--text_secondary); font-size: .84rem; }
+        footer { padding-top: 35px; color: var(--text_secondary); font-size: .8rem; }
+
+        @media (max-width: 850px) {
+            .layout { display: block; }
+            .sidebar { display: none; }
+            .main { padding-top: 52px; }
+            .endpoint_body { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 600px) {
+            .topbar { padding: 12px 16px; }
+            .topbar nav { display: none; }
+            .layout { width: min(100% - 32px, 1180px); }
+            .main { padding-bottom: 60px; }
+            h1 { font-size: 2.65rem; }
+            .auth_grid, .response_grid, .message_grid { grid-template-columns: 1fr; }
+            .endpoint_head { flex-wrap: wrap; }
+            .endpoint_summary { width: 100%; margin-left: 0; }
+        }
+    </style>
+</head>
+<body>
+    <header class="topbar">
+        <a class="brand" href="#top" aria-label="Notes App API home">
+            <span class="brand_mark">N</span>
+            <span>Notes App <small>API documentation</small></span>
+        </a>
+        <nav aria-label="Primary navigation">
+            <a href="#quickstart">Quick start</a>
+            <a href="#rest">REST API</a>
+            <a href="#realtime">Realtime</a>
+            <button class="theme_toggle" id="theme_toggle" type="button" aria-label="Switch to light mode">☼</button>
+        </nav>
+    </header>
+
+    <div class="layout" id="top">
+        <aside class="sidebar" aria-label="Documentation navigation">
+            <h2>On this page</h2>
+            <a href="#quickstart">Quick start</a>
+            <a href="#boards">Boards</a>
+            <a href="#notes">Notes</a>
+            <a href="#realtime">Realtime events</a>
+            <a href="#errors">Errors</a>
+        </aside>
+
+        <main class="main">
+            <p class="eyebrow">REST + WebSocket</p>
+            <h1>Build together,<br>one note at a time.</h1>
+            <p class="lead">A small, focused API for shared boards and collaborative notes. Use the REST endpoints for persistence and WebSocket events for a responsive board experience.</p>
+            <div class="base_url"><span></span><code>https://wom-2026-rest-api.onrender.com/</code></div>
+
+            <section id="quickstart">
+                <div class="section_heading"><h2>Quick start</h2><p>Every REST route is protected.</p></div>
+                <div class="auth_grid">
+                    <article class="card info_card">
+                        <h3>1. Get a JWT</h3>
+                        <p>Sign in through the Notes App authentication service. The token must contain the user subject in <strong>sub</strong>.</p>
+                    </article>
+                    <article class="card info_card">
+                        <h3>2. Authorize requests</h3>
+                        <p>Send the token as a Bearer token on every REST request.</p>
+                        <div class="token"><code>Authorization: Bearer &lt;your-jwt&gt;</code></div>
+                    </article>
+                </div>
+            </section>
+
+            <section id="rest">
+                <div class="section_heading"><h2>REST API</h2><p>JSON in, JSON out.</p></div>
+                <section id="boards" style="margin-top:0">
+                    <div class="section_heading"><h2>Boards</h2><p>Accessible boards only.</p></div>
+                    <article class="card endpoint">
+                        <div class="endpoint_head"><span class="method get">GET</span><span class="path">/boards</span><span class="endpoint_summary">List your boards</span></div>
+                        <div class="endpoint_body">
+                            <div><div><h4>Description</h4><p>Returns boards owned by, or shared with, the authenticated user.</p><span class="status ok">200 OK</span></div></div>
+                            <pre><button class="copy" type="button">Copy</button><code>[
+  {
+    <span class="key">"id"</span>: <span class="number">1</span>,
+    <span class="key">"name"</span>: <span class="string">"Project ideas"</span>,
+    <span class="key">"owner_id"</span>: <span class="string">"uuid"</span>
+  }
+]</code></pre>
+                        </div>
+                    </article>
+                    <article class="card endpoint">
+                        <div class="endpoint_head"><span class="method post">POST</span><span class="path">/boards</span><span class="endpoint_summary">Create a board</span></div>
+                        <div class="endpoint_body">
+                            <div><h4>Request body</h4><p>The name is trimmed and may contain up to 100 characters.</p><pre><button class="copy" type="button">Copy</button><code>{ <span class="key">"name"</span>: <span class="string">"Project ideas"</span> }</code></pre></div>
+                            <div><h4>Response</h4><pre><button class="copy" type="button">Copy</button><code>{
+  <span class="key">"id"</span>: <span class="number">2</span>,
+  <span class="key">"name"</span>: <span class="string">"Project ideas"</span>,
+  <span class="key">"owner_id"</span>: <span class="string">"uuid"</span>
+}</code></pre><span class="status ok">201 Created</span></div>
+                        </div>
+                    </article>
+                </section>
+
+                <section id="notes">
+                    <div class="section_heading"><h2>Notes</h2><p>Scoped to accessible boards.</p></div>
+                    <article class="card endpoint">
+                        <div class="endpoint_head"><span class="method get">GET</span><span class="path">/notes</span><span class="endpoint_summary">List notes</span></div>
+                        <div class="endpoint_body"><div><h4>Description</h4><p>Lists all notes on boards the authenticated user can access, ordered by ID.</p><span class="status ok">200 OK</span></div><pre><button class="copy" type="button">Copy</button><code>[
+  {
+    <span class="key">"id"</span>: <span class="number">12</span>,
+    <span class="key">"author_id"</span>: <span class="string">"uuid"</span>,
+    <span class="key">"board_id"</span>: <span class="number">2</span>,
+    <span class="key">"note"</span>: <span class="string">"Remember the launch date"</span>,
+    <span class="key">"pos_x"</span>: <span class="number">120</span>,
+    <span class="key">"pos_y"</span>: <span class="number">80</span>,
+    <span class="key">"width"</span>: <span class="number">220</span>,
+    <span class="key">"height"</span>: <span class="number">160</span>,
+    <span class="key">"color"</span>: <span class="number">0</span>,
+    <span class="key">"board"</span>: { <span class="key">"id"</span>: <span class="number">2</span>, <span class="key">"name"</span>: <span class="string">"Project ideas"</span> }
+  }
+]</code></pre></div>
+                    </article>
+                    <article class="card endpoint">
+                        <div class="endpoint_head"><span class="method get">GET</span><span class="path">/notes/:id</span><span class="endpoint_summary">Get one note</span></div>
+                        <div class="endpoint_body"><div><h4>Path parameter</h4><p><code>id</code> must be an integer note ID. The note must belong to an accessible board.</p><span class="status ok">200 OK</span><span class="status error">404 if not found</span></div><pre><button class="copy" type="button">Copy</button><code>{ <span class="key">"id"</span>: <span class="number">12</span>, <span class="key">"note"</span>: <span class="string">"Remember the launch date"</span>, <span class="key">"board"</span>: { <span class="key">"id"</span>: <span class="number">2</span>, <span class="key">"name"</span>: <span class="string">"Project ideas"</span> } }</code></pre></div>
+                    </article>
+                    <article class="card endpoint">
+                        <div class="endpoint_head"><span class="method post">POST</span><span class="path">/notes</span><span class="endpoint_summary">Create a note</span></div>
+                        <div class="endpoint_body">
+                            <div><h4>Request body</h4><p><code>note</code> must contain text. <code>board_id</code> must be a positive integer for a board you can access.</p><pre><button class="copy" type="button">Copy</button><code>{
+  <span class="key">"note"</span>: <span class="string">"Remember the launch date"</span>,
+  <span class="key">"board_id"</span>: <span class="number">2</span>
+}</code></pre></div>
+                            <div><h4>Response</h4><pre><button class="copy" type="button">Copy</button><code>{ <span class="key">"user"</span>: <span class="string">"Alex"</span>, <span class="key">"msg"</span>: <span class="string">"Note created"</span>, <span class="key">"id"</span>: <span class="number">12</span> }</code></pre><span class="status ok">201 Created</span></div>
+                        </div>
+                    </article>
+                    <article class="card endpoint">
+                        <div class="endpoint_head"><span class="method put">PUT</span><span class="path">/notes/:id</span><span class="endpoint_summary">Update text or layout</span></div>
+                        <div class="endpoint_body">
+                            <div><h4>Request body</h4><p>Send one or more fields. Empty bodies are rejected.</p><ul><li><code>note</code>: non-empty string</li><li><code>x</code>, <code>y</code>: 0–100000</li><li><code>width</code>, <code>height</code>: 50–5000</li><li><code>color</code>: 0–20</li></ul></div>
+                            <div><h4>Example</h4><pre><button class="copy" type="button">Copy</button><code>{ <span class="key">"x"</span>: <span class="number">180</span>, <span class="key">"color"</span>: <span class="number">3</span> }</code></pre><span class="status ok">200 OK</span></div>
+                        </div>
+                    </article>
+                    <article class="card endpoint">
+                        <div class="endpoint_head"><span class="method delete">DELETE</span><span class="path">/notes/:id</span><span class="endpoint_summary">Delete a note</span></div>
+                        <div class="endpoint_body"><div><h4>Description</h4><p>Deletes a note on an accessible board.</p><span class="status ok">200 OK</span></div><pre><button class="copy" type="button">Copy</button><code>{ <span class="key">"msg"</span>: <span class="string">"Note deleted"</span>, <span class="key">"id"</span>: <span class="number">12</span> }</code></pre></div>
+                    </article>
+                </section>
+            </section>
+
+            <section id="realtime">
+                <div class="section_heading"><h2>Realtime events</h2><p>Collaborate without polling.</p></div>
+                <div class="card info_card ws_url"><h3>Connect</h3><p>Open a WebSocket connection to the same host and pass the JWT in the query string.</p><pre><button class="copy" type="button">Copy</button><code>wss://wom-2026-rest-api.onrender.com/?token=&lt;your-jwt&gt;</code></pre></div>
+                <div class="message_grid">
+                    <article class="card message"><h3>Join a board</h3><p>Send immediately after connecting. The socket receives events only for an accessible board.</p><pre><button class="copy" type="button">Copy</button><code>{ <span class="key">"type"</span>: <span class="string">"join"</span>, <span class="key">"board_id"</span>: <span class="number">2</span> }</code></pre></article>
+                    <article class="card message"><h3>Move a note</h3><p>Broadcasts position changes to other clients in the board room. Values are rounded numbers.</p><pre><button class="copy" type="button">Copy</button><code>{ <span class="key">"type"</span>: <span class="string">"note_moving"</span>, <span class="key">"id"</span>: <span class="number">12</span>, <span class="key">"x"</span>: <span class="number">180</span>, <span class="key">"y"</span>: <span class="number">90</span> }</code></pre></article>
+                    <article class="card message"><h3>Typing preview</h3><p>Broadcast a temporary note content preview. Content is limited to 5000 characters.</p><pre><button class="copy" type="button">Copy</button><code>{ <span class="key">"type"</span>: <span class="string">"note_typing"</span>, <span class="key">"id"</span>: <span class="number">12</span>, <span class="key">"content"</span>: <span class="string">"Draft text..."</span> }</code></pre></article>
+                    <article class="card message"><h3>Server events</h3><p>REST changes are broadcast to the board room with a <code>board_id</code> field.</p><pre><button class="copy" type="button">Copy</button><code>{ <span class="key">"type"</span>: <span class="string">"note_created"</span>, <span class="key">"board_id"</span>: <span class="number">2</span>, <span class="key">"note"</span>: { ... } }</code></pre><p><code>note_updated</code> includes <code>note</code>; <code>note_deleted</code> includes <code>id</code>.</p></article>
+                </div>
+                <div class="note">Connections with an invalid or missing token close with code <code>4001</code>. Closing a socket automatically removes it from its board room.</div>
+            </section>
+
+            <section id="errors">
+                <div class="section_heading"><h2>Errors</h2><p>Responses use a consistent message field.</p></div>
+                <div class="card table_wrap">
+                    <table>
+                        <thead><tr><th>Status</th><th>When</th><th>Example</th></tr></thead>
+                        <tbody>
+                            <tr><td>400</td><td>Invalid ID, missing body data, or an out-of-range layout value.</td><td><code>{ "msg": "Invalid note id" }</code></td></tr>
+                            <tr><td>401</td><td>Missing, expired, or invalid Bearer token.</td><td><code>{ "msg": "Authorization required" }</code></td></tr>
+                            <tr><td>403</td><td>The authenticated user cannot access the requested board.</td><td><code>{ "msg": "No access to board" }</code></td></tr>
+                            <tr><td>404</td><td>The note does not exist or is not accessible.</td><td><code>{ "msg": "Note not found" }</code></td></tr>
+                            <tr><td>500</td><td>Unexpected server or database failure.</td><td><code>{ "msg": "Could not fetch notes", "error": "..." }</code></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+            <footer>Notes App API · REST and WebSocket endpoints for collaborative boards.</footer>
+        </main>
+    </div>
+    <script>
+        const root = document.documentElement;
+        const themeButton = document.getElementById("theme_toggle");
+        const savedTheme = localStorage.getItem("notes-api-theme");
+        if (savedTheme) root.dataset.theme = savedTheme;
+        function updateThemeButton() {
+            const light = root.dataset.theme === "light";
+            themeButton.textContent = light ? "☾" : "☼";
+            themeButton.setAttribute("aria-label", light ? "Switch to dark mode" : "Switch to light mode");
+        }
+        updateThemeButton();
+        themeButton.addEventListener("click", () => {
+            const next = root.dataset.theme === "light" ? "dark" : "light";
+            root.dataset.theme = next;
+            localStorage.setItem("notes-api-theme", next);
+            updateThemeButton();
+        });
+        document.querySelectorAll(".copy").forEach((button) => {
+            button.addEventListener("click", async () => {
+                const code = button.parentElement.querySelector("code").innerText;
+                try {
+                    await navigator.clipboard.writeText(code);
+                    button.textContent = "Copied";
+                    setTimeout(() => { button.textContent = "Copy"; }, 1200);
+                } catch {
+                    button.textContent = "Select text";
+                }
+            });
+        });
+    </script>
+</body>
+</html>

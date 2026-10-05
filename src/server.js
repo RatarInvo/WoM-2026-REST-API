@@ -9,9 +9,7 @@ const PORT = process.env.PORT || 4000
 app.use(cors())
 app.use(express.json())
 
-app.get('/', (req, res) => {
-    res.json({ msg: "Notes API", version: "0.1" })
-})
+app.use('/', express.static(__dirname + '/static'))
 
 const notesRouter = require('./routes/notes')
 const boardsRouter = require('./routes/boards')
