@@ -36,10 +36,8 @@ router.get('/', async (req, res) => {
 
         return res.json(notes)
     } catch (error) {
-        return res.status(500).json({
-            msg: 'Could not fetch notes',
-            error: error.message
-        })
+        console.error('Could not fetch notes:', error)
+        return res.status(500).json({ msg: 'Could not fetch notes' })
     }
 })
 
@@ -69,10 +67,8 @@ router.get('/:id', async (req, res) => {
 
         return res.json(note)
     } catch (error) {
-        return res.status(500).json({
-            msg: 'Could not fetch note',
-            error: error.message
-        })
+        console.error('Could not fetch note:', error)
+        return res.status(500).json({ msg: 'Could not fetch note' })
     }
 })
 
@@ -120,10 +116,8 @@ router.post('/', async (req, res) => {
             id: note.id
         })
     } catch (error) {
-        return res.status(500).json({
-            msg: 'Could not create note',
-            error: error.message
-        })
+        console.error('Could not create note:', error)
+        return res.status(500).json({ msg: 'Could not create note' })
     }
 })
 
@@ -193,10 +187,8 @@ router.put('/:id', async (req, res) => {
             updatedNote: note
         })
     } catch (error) {
-        return res.status(500).json({
-            msg: 'Could not update note',
-            error: error.message
-        })
+        console.error('Could not update note:', error)
+        return res.status(500).json({ msg: 'Could not update note' })
     }
 })
 
@@ -230,10 +222,8 @@ router.delete('/:id', async (req, res) => {
             id: note.id
         })
     } catch (error) {
-        return res.status(500).json({
-            msg: 'Could not delete note',
-            error: error.message
-        })
+        console.error('Could not delete note:', error)
+        return res.status(500).json({ msg: 'Could not delete note' })
     }
 })
 

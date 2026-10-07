@@ -24,10 +24,8 @@ router.get('/', async (req, res) => {
 
         return res.json(boards)
     } catch (error) {
-        return res.status(500).json({
-            msg: 'Could not fetch boards',
-            error: error.message
-        })
+        console.error('Could not fetch boards:', error)
+        return res.status(500).json({ msg: 'Could not fetch boards' })
     }
 })
 
@@ -54,10 +52,8 @@ router.post('/', async (req, res) => {
 
         return res.status(201).json(board)
     } catch (error) {
-        return res.status(500).json({
-            msg: 'Could not create board',
-            error: error.message
-        })
+        console.error('Could not create board:', error)
+        return res.status(500).json({ msg: 'Could not create board' })
     }
 })
 
